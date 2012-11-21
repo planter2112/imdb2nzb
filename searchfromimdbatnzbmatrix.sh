@@ -60,9 +60,9 @@ do
 	#URL="$NZBSEARCHURL?search=$ENTRY%20$LANGUAGE&searchin=name&cat=$CATEGORY&larger=$MINSIZE&smaller=$MAXSIZE&age=$MAXAGE&username=$USER&apikey=$API"
 	echo "$ENTRY:"
 	URL="$NZBSEARCHURL?search=$ENTRY&searchin=name&catid=$MOVIE_CATEGORY&larger=$MINSIZE&smaller=$MAXSIZE&age=$MAXAGE&username=$USER&apikey=$MATRIXAPI"
-	curl -s --user-agent $USERAGENT "$URL" > /tmp/$ENTRY.found
+	curl -s --user-agent $USERAGENT "$URL" > /tmp/nzbmatrix_$ENTRY.found
 	URL="$SUSEARCHURL?t=search&q=$ENTRY&extended=1&cat=5020,5040,5070,5030&apikey=$SUAPI"
 	#echo $URL
-	curl -s --user-agent $USERAGENT "$URL" > /tmp/$ENTRY.found
+	curl -s --user-agent $USERAGENT "$URL" > /tmp/nzbmatrix_$ENTRY.found
 	sleep 1
 done
