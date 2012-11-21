@@ -48,9 +48,19 @@ do
        echo "$ENTRY:"
        URL="$NZBSEARCHURL?search=tt$ENTRY&searchin=weblink&larger=$MINSIZE&smaller=$MAXSIZE&age=$MAXAGE&username=$USER&apikey=$MATRIXAPI"
        curl -s --user-agent $USERAGENT "$URL" > /tmp/nzbmatrix_$ENTRY.found
-       URL="$SUSEARCHURL?t=movie&imdbid=$ENTRY&extended=1&cat=2050,2040,2010&apikey=$SUAPI"
+       declare -a NAMES=(`cat /tmp/nzbmatrix_$ENTRY.found | grep ^NZBNAME | sed 's|^NZBNAME:\(.*\)$|\1|' | sed 's|;$||g' | tr " " "."`)
+       declare -a LINKS=(`cat /tmp/nzbmatrix_$ENTRY.found | grep ^LINK | sed 's|^LINK:\(.*\)$|\1|' | sed 's|;$||g' | tr " " "."`)
+       declare -a LANGUAGES=(`cat /tmp/nzbmatrix_$ENTRY.found | grep ^LANGUAGE | sed 's|^LANGUAGE:\(.*\)$|\1|' | sed 's|;$||g' | tr " " "."`)
+       declare -a CATEGORIES=(`cat /tmp/nzbmatrix_$ENTRY.found | grep ^CATEGORY | sed 's|^NZBNAME:\(.*\)$|\1|' | sed 's|;$||g' | tr " " "."`)
+#	echo ${LANGUAGES[@]}
+#	echo ${CATEGORIES[@]}
+#	echo ${LINKS[@]}
+       URL="$SUSEARCHURL?t=movie&imdbid=$ENTRY&extended=1&cat=2050,2040,2010,5020,5040,5070,5030&apikey=$SUAPI"
        curl -s --user-agent $USERAGENT "$URL" > /tmp/nzbsu_$ENTRY.found
-       sleep 1
+       declare -a NAMES=(`xpath -q -e /rss/channel/item/title /tmp/nzbsu_$ENTRY.found`)
+#	echo ${NAMES[@]}
+       declare -a LINKS=(`xpath -q -e /rss/channel/item/link /tmp/nzbsu_$ENTRY.found`)
+#	echo ${LINKS[@]}
 done
 
 ### OLD Search with Name and NOT ID ####
