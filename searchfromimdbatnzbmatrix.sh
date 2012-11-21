@@ -63,6 +63,6 @@ do
 	curl -s --user-agent $USERAGENT "$URL" > /tmp/nzbmatrix_$ENTRY.found
 	URL="$SUSEARCHURL?t=search&q=$ENTRY&extended=1&cat=5020,5040,5070,5030&apikey=$SUAPI"
 	#echo $URL
-	curl -s --user-agent $USERAGENT "$URL" > /tmp/nzbmatrix_$ENTRY.found
+	curl -s --user-agent $USERAGENT "$URL" > /tmp/nzbsu_$ENTRY.found
 	sleep 1
 done
