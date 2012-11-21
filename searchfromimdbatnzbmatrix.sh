@@ -33,36 +33,47 @@ USERAGENT="Safari"
 #42 Movies HD (x264)
 #50 Movies HD (Image)
 
+#OLD -  we now use the IMDB ID -
+#TV_ENTRIES=`curl -s --user-agent $USERAGENT $WATCHLIST | grep "<title" | egrep -v WATCHLIST | grep "TV Series" | sed 's|<title>||g' | sed 's|</title>||g' |  sed 's|^ *||g' | sed 's|\ (.*)$||g' | perl -MHTML::Entities -ne 'print decode_entities($_)' | perl -MURI::Escape -lne 'print uri_escape($_)'`
+#MOVIE_ENTRIES=`curl -s --user-agent $USERAGENT $WATCHLIST | grep "<title" | egrep -v WATCHLIST | egrep -v "TV Series" | sed 's|<title>||g' | sed 's|</title>||g' | sed 's|^ *||g' | sed 's|\ (.*)$||g' | perl -MHTML::Entities -ne 'print decode_entities($_)' | perl -MURI::Escape -lne 'print uri_escape($_)'`
 
-
-TV_ENTRIES=`curl -s --user-agent $USERAGENT $WATCHLIST | grep "<title" | egrep -v WATCHLIST | grep "TV Series" | sed 's|<title>||g' | sed 's|</title>||g' |  sed 's|^ *||g' | sed 's|\ (.*)$||g' | perl -MHTML::Entities -ne 'print decode_entities($_)' | perl -MURI::Escape -lne 'print uri_escape($_)'`
-MOVIE_ENTRIES=`curl -s --user-agent $USERAGENT $WATCHLIST | grep "<title" | egrep -v WATCHLIST | egrep -v "TV Series" | sed 's|<title>||g' | sed 's|</title>||g' | sed 's|^ *||g' | sed 's|\ (.*)$||g' | perl -MHTML::Entities -ne 'print decode_entities($_)' | perl -MURI::Escape -lne 'print uri_escape($_)'`
-
+ENTRIES=`curl -s --user-agent $USERAGENT $WATCHLIST | grep '<link>http://www.imdb.com/title/.*/</link>' | sed 's|<link>http://www.imdb.com/title/tt\(.*\)/</link>|\1|' | awk '{ print $1 }'`
 
 ### Search in Lokal Directories here :
 ## TODO
 #######################################
 
-# Search NZBMatrix and NZB.SU for TV-Shows an Movies
-for ENTRY in $TV_ENTRIES 
+for ENTRY in $ENTRIES 
 do
-	#URL="$NZBSEARCHURL?search=$ENTRY%20$LANGUAGE&searchin=name&cat=$CATEGORY&larger=$MINSIZE&smaller=$MAXSIZE&age=$MAXAGE&username=$USER&apikey=$API"
-	echo "$ENTRY:"
-	URL="$NZBSEARCHURL?search=$ENTRY&searchin=name&catid=$TV_CATEGORY&larger=$MINSIZE&smaller=$MAXSIZE&age=$MAXAGE&username=$USER&apikey=$MATRIXAPI"
-	curl -s --user-agent $USERAGENT "$URL" > /tmp/nzbmatrix_$ENTRY.found
-	URL="$SUSEARCHURL?t=search&q=$ENTRY&extended=1&cat=2050,2040,2010&apikey=$SUAPI"
-	#echo $URL
-	curl -s --user-agent $USERAGENT "$URL" > /tmp/nzbsu_$ENTRY.found
-	sleep 1
+       echo "$ENTRY:"
+       URL="$NZBSEARCHURL?search=tt$ENTRY&searchin=weblink&larger=$MINSIZE&smaller=$MAXSIZE&age=$MAXAGE&username=$USER&apikey=$MATRIXAPI"
+       curl -s --user-agent $USERAGENT "$URL" > /tmp/nzbmatrix_$ENTRY.found
+       URL="$SUSEARCHURL?t=movie&imdbid=$ENTRY&extended=1&cat=2050,2040,2010&apikey=$SUAPI"
+       curl -s --user-agent $USERAGENT "$URL" > /tmp/nzbsu_$ENTRY.found
+       sleep 1
 done
-for ENTRY in $MOVIE_ENTRIES
-do
-	#URL="$NZBSEARCHURL?search=$ENTRY%20$LANGUAGE&searchin=name&cat=$CATEGORY&larger=$MINSIZE&smaller=$MAXSIZE&age=$MAXAGE&username=$USER&apikey=$API"
-	echo "$ENTRY:"
-	URL="$NZBSEARCHURL?search=$ENTRY&searchin=name&catid=$MOVIE_CATEGORY&larger=$MINSIZE&smaller=$MAXSIZE&age=$MAXAGE&username=$USER&apikey=$MATRIXAPI"
-	curl -s --user-agent $USERAGENT "$URL" > /tmp/nzbmatrix_$ENTRY.found
-	URL="$SUSEARCHURL?t=search&q=$ENTRY&extended=1&cat=5020,5040,5070,5030&apikey=$SUAPI"
-	#echo $URL
-	curl -s --user-agent $USERAGENT "$URL" > /tmp/nzbsu_$ENTRY.found
-	sleep 1
-done
+
+### OLD Search with Name and NOT ID ####
+## Search NZBMatrix and NZB.SU for TV-Shows an Movies
+#for ENTRY in $TV_ENTRIES 
+#do
+#	#URL="$NZBSEARCHURL?search=$ENTRY%20$LANGUAGE&searchin=name&cat=$CATEGORY&larger=$MINSIZE&smaller=$MAXSIZE&age=$MAXAGE&username=$USER&apikey=$API"
+#	echo "$ENTRY:"
+#	URL="$NZBSEARCHURL?search=$ENTRY&searchin=name&catid=$TV_CATEGORY&larger=$MINSIZE&smaller=$MAXSIZE&age=$MAXAGE&username=$USER&apikey=$MATRIXAPI"
+#	curl -s --user-agent $USERAGENT "$URL" > /tmp/nzbmatrix_$ENTRY.found
+#	URL="$SUSEARCHURL?t=search&q=$ENTRY&extended=1&cat=2050,2040,2010&apikey=$SUAPI"
+#	#echo $URL
+#	curl -s --user-agent $USERAGENT "$URL" > /tmp/nzbsu_$ENTRY.found
+#	sleep 1
+#done
+#for ENTRY in $MOVIE_ENTRIES
+#do
+#	#URL="$NZBSEARCHURL?search=$ENTRY%20$LANGUAGE&searchin=name&cat=$CATEGORY&larger=$MINSIZE&smaller=$MAXSIZE&age=$MAXAGE&username=$USER&apikey=$API"
+#	echo "$ENTRY:"
+#	URL="$NZBSEARCHURL?search=$ENTRY&searchin=name&catid=$MOVIE_CATEGORY&larger=$MINSIZE&smaller=$MAXSIZE&age=$MAXAGE&username=$USER&apikey=$MATRIXAPI"
+#	curl -s --user-agent $USERAGENT "$URL" > /tmp/nzbmatrix_$ENTRY.found
+#	URL="$SUSEARCHURL?t=search&q=$ENTRY&extended=1&cat=5020,5040,5070,5030&apikey=$SUAPI"
+#	#echo $URL
+#	curl -s --user-agent $USERAGENT "$URL" > /tmp/nzbsu_$ENTRY.found
+#	sleep 1
+#done
