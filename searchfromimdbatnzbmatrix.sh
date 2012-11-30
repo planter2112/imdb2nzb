@@ -45,45 +45,46 @@ ENTRIES=`curl -s --user-agent $USERAGENT $WATCHLIST | grep '<link>http://www.imd
 
 for ENTRY in $ENTRIES 
 do
-       echo "$ENTRY:"
+       # Search for Local Files should be implemented here : 
+       ############# Search for Local Files ###############
+       ####################################################
+       # Search for Online Data :
+       ##########################
+       echo "Searching for $ENTRY:"
        URL="$NZBSEARCHURL?search=tt$ENTRY&searchin=weblink&larger=$MINSIZE&smaller=$MAXSIZE&age=$MAXAGE&username=$USER&apikey=$MATRIXAPI"
-       curl -s --user-agent $USERAGENT "$URL" > /tmp/nzbmatrix_$ENTRY.found
+       #curl -s --user-agent $USERAGENT "$URL" > /tmp/nzbmatrix_$ENTRY.found
        declare -a NAMES=(`cat /tmp/nzbmatrix_$ENTRY.found | grep ^NZBNAME | sed 's|^NZBNAME:\(.*\)$|\1|' | sed 's|;$||g' | tr " " "."`)
        declare -a LINKS=(`cat /tmp/nzbmatrix_$ENTRY.found | grep ^LINK | sed 's|^LINK:\(.*\)$|\1|' | sed 's|;$||g' | tr " " "."`)
        declare -a LANGUAGES=(`cat /tmp/nzbmatrix_$ENTRY.found | grep ^LANGUAGE | sed 's|^LANGUAGE:\(.*\)$|\1|' | sed 's|;$||g' | tr " " "."`)
        declare -a CATEGORIES=(`cat /tmp/nzbmatrix_$ENTRY.found | grep ^CATEGORY | sed 's|^NZBNAME:\(.*\)$|\1|' | sed 's|;$||g' | tr " " "."`)
-#	echo ${LANGUAGES[@]}
-#	echo ${CATEGORIES[@]}
-#	echo ${LINKS[@]}
-       URL="$SUSEARCHURL?t=movie&imdbid=$ENTRY&extended=1&cat=2050,2040,2010,5020,5040,5070,5030&apikey=$SUAPI"
-       curl -s --user-agent $USERAGENT "$URL" > /tmp/nzbsu_$ENTRY.found
-       declare -a NAMES=(`xpath -q -e /rss/channel/item/title /tmp/nzbsu_$ENTRY.found`)
-#	echo ${NAMES[@]}
-       declare -a LINKS=(`xpath -q -e /rss/channel/item/link /tmp/nzbsu_$ENTRY.found`)
-#	echo ${LINKS[@]}
-done
 
-### OLD Search with Name and NOT ID ####
-## Search NZBMatrix and NZB.SU for TV-Shows an Movies
-#for ENTRY in $TV_ENTRIES 
-#do
-#	#URL="$NZBSEARCHURL?search=$ENTRY%20$LANGUAGE&searchin=name&cat=$CATEGORY&larger=$MINSIZE&smaller=$MAXSIZE&age=$MAXAGE&username=$USER&apikey=$API"
-#	echo "$ENTRY:"
-#	URL="$NZBSEARCHURL?search=$ENTRY&searchin=name&catid=$TV_CATEGORY&larger=$MINSIZE&smaller=$MAXSIZE&age=$MAXAGE&username=$USER&apikey=$MATRIXAPI"
-#	curl -s --user-agent $USERAGENT "$URL" > /tmp/nzbmatrix_$ENTRY.found
-#	URL="$SUSEARCHURL?t=search&q=$ENTRY&extended=1&cat=2050,2040,2010&apikey=$SUAPI"
-#	#echo $URL
-#	curl -s --user-agent $USERAGENT "$URL" > /tmp/nzbsu_$ENTRY.found
-#	sleep 1
-#done
-#for ENTRY in $MOVIE_ENTRIES
-#do
-#	#URL="$NZBSEARCHURL?search=$ENTRY%20$LANGUAGE&searchin=name&cat=$CATEGORY&larger=$MINSIZE&smaller=$MAXSIZE&age=$MAXAGE&username=$USER&apikey=$API"
-#	echo "$ENTRY:"
-#	URL="$NZBSEARCHURL?search=$ENTRY&searchin=name&catid=$MOVIE_CATEGORY&larger=$MINSIZE&smaller=$MAXSIZE&age=$MAXAGE&username=$USER&apikey=$MATRIXAPI"
-#	curl -s --user-agent $USERAGENT "$URL" > /tmp/nzbmatrix_$ENTRY.found
-#	URL="$SUSEARCHURL?t=search&q=$ENTRY&extended=1&cat=5020,5040,5070,5030&apikey=$SUAPI"
-#	#echo $URL
-#	curl -s --user-agent $USERAGENT "$URL" > /tmp/nzbsu_$ENTRY.found
-#	sleep 1
-#done
+	MAXVAL=`expr ${#NAMES[@]} - 1`
+	echo "NzbMatrix Results: ${#NAMES[@]} found"
+	for i in ${!NAMES[*]} 
+	do
+		if [ ${LANGUAGES,,} == "$LANGUAGE" ] ; then
+			echo ${NAMES[$i]}
+		else
+			echo "NOT $LANGUAGE" 
+		fi
+	done
+
+       URL="$SUSEARCHURL?t=movie&imdbid=$ENTRY&extended=1&cat=2050,2040,2010,5020,5040,5070,5030&apikey=$SUAPI"
+       #curl -s --user-agent $USERAGENT "$URL" > /tmp/nzbsu_$ENTRY.found
+       declare -a NAMES=(`xpath -q -e /rss/channel/item/title /tmp/nzbsu_$ENTRY.found | sed 's|<title>\(.*\)</title>|\1|g' | tr ' ' '.'`)
+       declare -a LINKS=(`xpath -q -e /rss/channel/item/link /tmp/nzbsu_$ENTRY.found | sed 's|<link>\(.*\)</link>|\1|g'`)
+
+	MAXVAL=`expr ${#NAMES[@]} - 1`
+	echo "Nzb.su Results: ${#NAMES[@]} found"
+	for i in ${!NAMES[*]} 
+	do
+		GERMAN=`echo ${NAMES[$i]} | egrep -i $LANGUAGE `
+		if [ -z $GERMAN ] ; then
+			echo "NOT $LANGUAGE"
+		else
+			echo ${NAMES[$i]}
+		fi
+	done
+	
+	#echo ${LINKS[@]}
+done
